@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_center_teacher_list" model="ir.ui.view">
+            <field name="name">center.teacher.list</field>
+            <field name="model">center.teacher</field>
+            <field name="arch" type="xml">
+                <list string="Teacher Profiles">
+                    <field name="name"/>
+                    <field name="work_email"/>
+                    <field name="work_phone"/>
+                    <field name="expertise"/>
+                    </list>
+            </field>
+        </record>
+
+        <!--Assignment list for teacher-->
+        <record id="view_assignment_list_teacher" model="ir.ui.view">
+            <field name="name">assignment.list.teacher</field>
+            <field name="model">center.assignment</field>
+            <field name="arch" type="xml">
+                <list decoration-success="state_for_teacher in ('all_submitted', 'finished')"
+                      decoration-warning="state_for_teacher == 'partial'"
+                      decoration-info="state_for_teacher == 'overdue'"
+                      decoration-bf="state_for_teacher == 'finished'">
+                        <field name="class_id"/>
+                        <field name="state_for_teacher"/>
+                </list>
+            </field>
+        </record>
+
+        <!--Action link with teacher profile-->
+        <record id="action_my_profile_teacher" model="ir.actions.server">
+            <field name="name">Open Teacher Profile</field>
+            <field name="model_id" ref="model_center_teacher"/>
+            <field name="state">code</field>
+            <field name="code">
+teacher = env['center.teacher'].search([('user_id', '=', env.uid)], limit=1)
+if teacher:
+    action = {
+        'type': 'ir.actions.act_window',
+        'name': 'My Profile',
+        'res_model': 'center.teacher',
+        'view_mode': 'form',
+        'res_id': teacher.id,
+        'target': 'current',
+    }
+            </field>
+        </record>
+
+        <!--Result of Action Teacher Profile-->
+        <record id="view_center_teacher_form" model="ir.ui.view">
+            <field name="name">center.teacher.form</field>
+            <field name="model">center.teacher</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_teacher_schedule" type="object" class="oe_stat_button" icon="fa-calendar">
+                                <div class="o_stat_info">
+                                    <span class="o_stat_text">Teaching Schedule</span>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h1><field name="name" placeholder="Teacher's Name..."/></h1>
+                        </div>
+                        <group>
+                            <group string="Basic Information">
+                                <field name="work_email"/>
+                                <field name="work_phone"/>
+                                <field name="identification_id"/>
+                            </group>
+                            <group string="Professional Details">
+                                <field name="expertise"/>
+                                <field name="certificate_tag_ids" widget="many2many_tags"/>
+                                </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>

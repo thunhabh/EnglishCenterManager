@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--Menu-->
+        <menuitem id="menu_center_root" name="Center Management" sequence="10"/>
+
+        <menuitem id="menu_center_profiles" name="Human Resources" parent="menu_center_root" sequence="1"
+                  groups="base.group_erp_manager"/>
+        <menuitem id="menu_center_teacher_child" name="Teachers" parent="menu_center_profiles" action="action_center_teacher" sequence="1" groups="base.group_erp_manager"/>
+        <menuitem id="menu_center_student_child" name="Students" parent="menu_center_profiles" action="action_center_student" sequence="2" groups="base.group_erp_manager"/>
+
+         <menuitem id="menu_my_profile_teacher"
+                  name="My Profile"
+                  parent="menu_center_root"
+                  sequence="1"
+                  action="action_my_profile_teacher"
+                  groups="english_center.group_center_teacher"/>
+
+        <menuitem id="menu_my_profile_student"
+                  name="My Profile"
+                  parent="menu_center_root"
+                  sequence="1"
+                  action="action_my_profile_student"
+                  groups="english_center.group_center_student"/>
+
+        <menuitem id="menu_center_education" name="Education" parent="menu_center_root" sequence="2"/>
+        <menuitem id="menu_center_course_child" name="Course Templates" parent="menu_center_education" action="action_center_course" sequence="1"
+                  groups="base.group_erp_manager,english_center.group_center_teacher"/>
+        <menuitem id="menu_center_class_child" name="Active Classes" parent="menu_center_education" action="action_center_class" sequence="2"/>
+
+        <menuitem id="menu_center_academic" name="Academic" parent="menu_center_root" sequence="3"/>
+        <menuitem id="menu_center_assignment_child" name="Assignments" parent="menu_center_academic" action="action_center_assignment" sequence="1"/>
+        <menuitem id="menu_center_submission_child" name="Submissions" parent="menu_center_academic" action="action_center_submission" sequence="2"/>
+
+        <record id="action_center_assignment" model="ir.actions.act_window">
+            <field name="name">Assignments</field>
+            <field name="res_model">center.assignment</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">Create your first assignment!</p>
+            </field>
+        </record>
+
+        <!--Action-->
+        <record id="action_center_course" model="ir.actions.act_window">
+            <field name="name">Course Templates</field>
+            <field name="res_model">center.course</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <record id="action_center_class" model="ir.actions.act_window">
+            <field name="name">Running Classes</field>
+            <field name="res_model">center.class</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <record id="action_center_student" model="ir.actions.act_window">
+            <field name="name">Student Profiles</field>
+            <field name="res_model">center.student</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <record id="action_center_teacher" model="ir.actions.act_window">
+            <field name="name">Teacher Profiles</field>
+            <field name="res_model">center.teacher</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <record id="action_center_submission" model="ir.actions.act_window">
+            <field name="name">Submissions</field>
+            <field name="res_model">center.submission</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <record id="view_center_submission_list" model="ir.ui.view">
+            <field name="name">center.submission.list</field>
+            <field name="model">center.submission</field>
+            <field name="arch" type="xml">
+                <list string="Student Submissions" default_order="submission_date desc" decoration-warning="score == -1" decoration-success="score != -1">
+                    <field name="assignment_id"/>
+                    <field name="student_id"/>
+                    <field name="submission_date"/>
+                    <field name="score" widget="badge" invisible="score == -1"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_center_submission_form" model="ir.ui.view">
+            <field name="name">center.submission.form</field>
+            <field name="model">center.submission</field>
+            <field name="arch" type="xml">
+                <form string="Student Submission">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>Submission for <field name="student_id" readonly="1" force_save="1" class="text-primary"/></h1>
+                        </div>
+                        <group>
+                            <group string="Upload Your Work">
+                                <field name="assignment_id" domain="[('class_id.student_ids.user_id', '=', uid)]"/>
+
+                                <field name="file_name" invisible="1"/>
+                                <field name="attachment_ids" filename="file_name" widget="many2many_binary"/>
+                                <field name="submission_date" readonly="1"/>
+                            </group>
+                            <group string="Teacher's Evaluation">
+                                <field name="score"/>
+                                <field name="feedback"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_center_teacher_list" model="ir.ui.view">
+            <field name="name">center.teacher.list</field>
+            <field name="model">center.teacher</field>
+            <field name="priority">50</field>
+            <field name="arch" type="xml">
+                <list string="Teacher Profiles">
+                    <field name="name"/>
+                    <field name="work_email"/>
+                    <field name="work_phone"/>
+                    <field name="expertise"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_center_teacher_form" model="ir.ui.view">
+            <field name="name">center.teacher.form</field>
+            <field name="model">center.teacher</field>
+            <field name="priority">50</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1><field name="name" placeholder="Teacher's Name..."/></h1>
+                        </div>
+                        <group>
+                            <group string="Contact &amp; ID">
+                                <field name="work_email"/>
+                                <field name="work_phone"/>
+                                <field name="identification_id"/>
+                            </group>
+                            <group string="Professional Info">
+                                <field name="expertise"/>
+                                <field name="certificate_tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_center_course_list" model="ir.ui.view">
+            <field name="name">center.course.list</field>
+            <field name="model">center.course</field>
+            <field name="arch" type="xml">
+                <list string="Course Templates">
+                    <field name="name"/>
+                    <field name="total_sessions"/>
+                    <field name="total_classes"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_center_course_form" model="ir.ui.view">
+            <field name="name">center.course.form</field>
+            <field name="model">center.course</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="total_sessions"/>
+                            <field name="description"/>
+                        </group>
+                        <notebook>
+                            <page string="Classes">
+                                <field name="class_ids" readonly="1">
+                                    <list>
+                                        <field name="name" string="Class Code"/>
+                                        <field name="start_date" string="Start Date"/>
+                                        <field name="teacher_id" string="Teacher"/>
+                                        <field name="state" string="Status" widget="badge"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_center_class_list" model="ir.ui.view">
+            <field name="name">center.class.list</field>
+            <field name="model">center.class</field>
+            <field name="arch" type="xml">
+                <list string="Running Classes">
+                    <field name="name"/>
+                    <field name="course_id"/>
+                    <field name="start_date"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_center_class_form" model="ir.ui.view">
+            <field name="name">center.class.form</field>
+            <field name="model">center.class</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="action_active_class" string="Activate Class" type="object" class="oe_highlight" invisible="state != 'recruiting'"/>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title"><h1><field name="name"/></h1></div>
+                        <group>
+                            <group string="Configuration">
+                                <field name="course_id" readonly="state != 'recruiting'"/>
+                                <field name="start_date" readonly="state != 'recruiting'"/>
+                                <field name="end_date"/>
+                            </group>
+                            <group string="Schedule Configuration">
+                                <field name="schedule_ids" nolabel="1" readonly="state != 'recruiting'">
+                                    <list editable="bottom">
+                                        <field name="day_of_week"/>
+                                        <field name="start_time" widget="float_time"/>
+                                        <field name="end_time" widget="float_time"/>
+                                    </list>
+                                </field>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="teacher_id" readonly="state != 'recruiting'"/>
+                        </group>
+                        <notebook>
+                            <page string="Sessions Timeline">
+                                <field name="session_ids" readonly="1">
+                                    <list>
+                                        <field name="sequence"/>
+                                        <field name="start_datetime"/>
+                                        <field name="end_datetime"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Student list">
+                                <field name="student_ids">
+                                    <list>
+                                        <field name="name"/>
+                                        <field name="email"/>
+                                        <field name="credit"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Assignments">
+                                    <field name="assignment_ids" readonly="1"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_center_student_list" model="ir.ui.view">
+            <field name="name">center.student.list</field>
+            <field name="model">center.student</field>
+            <field name="arch" type="xml">
+                <list string="Student Profiles">
+                    <field name="name"/>
+                    <field name="email"/>
+                    <field name="parent_name"/>
+                    <field name="parent_phone"/>
+                    <field name="credit"/>
+                    <field name="debt"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_center_student_form" model="ir.ui.view">
+            <field name="name">center.student.form</field>
+            <field name="model">center.student</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_student_schedule" type="object" class="oe_stat_button" icon="fa-calendar">
+                                <div class="o_stat_info">
+                                    <span class="o_stat_text">Study Schedule</span>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="oe_title"><h1><field name="name"/></h1></div>
+                        <group>
+                            <group string="Account Information">
+                                <field name="email"/>
+                                <field name="user_id" readonly="1"/>
+                            </group>
+                            <group string="Parent">
+                                <field name="parent_name"/>
+                                <field name="parent_phone"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!--Draw calendar block-->
+        <record id="view_class_session_calendar" model="ir.ui.view">
+            <field name="name">class.session.calendar</field>
+            <field name="model">class.session</field>
+            <field name="arch" type="xml">
+                <calendar string="Class Schedule" date_start="start_datetime" date_stop="end_datetime" color="class_id" mode="week" event_open_popup="true">
+                    <field name="name"/>
+                    <field name="teacher_id"/>
+                </calendar>
+            </field>
+        </record>
+
+        <record id="view_center_assignment_form" model="ir.ui.view">
+            <field name="name">center.assignment.form</field>
+            <field name="model">center.assignment</field>
+            <field name="arch" type="xml">
+                <form string="Assignment">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only" string="Assignment Title"/>
+                            <h1><field name="name" placeholder="Title..."/></h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="class_id" options="{'no_create': True}"/>
+                                <field name="teacher_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="due_date"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Requirements &amp; Materials">
+                                <field name="description" placeholder="Write assignment instructions here..."/>
+                                <separator string="Attachments"/>
+                                <field name="attachment_ids" widget="many2many_binary"/>
+                            </page>
+                            <page string="Submissions Overview">
+                                <field name="submission_ids" readonly="1">
+                                    <list>
+                                        <field name="student_id"/>
+                                        <field name="submission_date"/>
+                                        <field name="score"/>
+                                        <field name="feedback"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>
