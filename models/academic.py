@@ -10,7 +10,7 @@ class CenterAssignment(models.Model):
     class_id = fields.Many2one('center.class', string="Class", required=True)
     teacher_id = fields.Many2one('center.teacher', related='class_id.teacher_id', store=True, string="Teacher")
 
-    description = fields.Html(string="Requirements")
+    description = fields.Char(string="Requirements")
     attachment_ids = fields.Many2many('ir.attachment', string="Attachments")
 
     due_date = fields.Datetime(string="Deadline")
@@ -56,6 +56,12 @@ class CenterAssignment(models.Model):
                 record.state_for_teacher = 'overdue'
             else:
                 record.state_for_teacher = 'partial'
+
+    @api.constrains('due_date')
+    def _check_due_date(self):
+        for rec in self:
+            if rec.due_date and rec.due_date.date() < fields.Date.today():
+                raise ValidationError("Error: Due date cannot be in the past!")
 
 
 class CenterSubmission(models.Model):

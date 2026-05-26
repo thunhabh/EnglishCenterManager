@@ -24,3 +24,6 @@ access_stu_sub,center.submission,model_center_submission,english_center.group_ce
 access_stu_course,center.course,model_center_course,english_center.group_center_student,0,0,0,0
 access_stu_schedule,center.class.schedule,model_center_class_schedule,english_center.group_center_student,1,0,0,0
 access_stu_session,class.session,model_class_session,english_center.group_center_student,1,0,0,0
+access_admin_classroom,center.classroom,model_center_classroom,base.group_erp_manager,1,1,1,1
+access_tea_classroom,center.classroom,model_center_classroom,english_center.group_center_teacher,1,0,0,0
+access_stu_classroom,center.classroom,model_center_classroom,english_center.group_center_student,1,0,0,0

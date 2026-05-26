@@ -1,37 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!--Menu-->
-        <menuitem id="menu_center_root" name="Center Management" sequence="10"/>
 
-        <menuitem id="menu_center_profiles" name="Human Resources" parent="menu_center_root" sequence="1"
-                  groups="base.group_erp_manager"/>
-        <menuitem id="menu_center_teacher_child" name="Teachers" parent="menu_center_profiles" action="action_center_teacher" sequence="1" groups="base.group_erp_manager"/>
-        <menuitem id="menu_center_student_child" name="Students" parent="menu_center_profiles" action="action_center_student" sequence="2" groups="base.group_erp_manager"/>
 
-         <menuitem id="menu_my_profile_teacher"
-                  name="My Profile"
-                  parent="menu_center_root"
-                  sequence="1"
-                  action="action_my_profile_teacher"
-                  groups="english_center.group_center_teacher"/>
-
-        <menuitem id="menu_my_profile_student"
-                  name="My Profile"
-                  parent="menu_center_root"
-                  sequence="1"
-                  action="action_my_profile_student"
-                  groups="english_center.group_center_student"/>
-
-        <menuitem id="menu_center_education" name="Education" parent="menu_center_root" sequence="2"/>
-        <menuitem id="menu_center_course_child" name="Course Templates" parent="menu_center_education" action="action_center_course" sequence="1"
-                  groups="base.group_erp_manager,english_center.group_center_teacher"/>
-        <menuitem id="menu_center_class_child" name="Active Classes" parent="menu_center_education" action="action_center_class" sequence="2"/>
-
-        <menuitem id="menu_center_academic" name="Academic" parent="menu_center_root" sequence="3"/>
-        <menuitem id="menu_center_assignment_child" name="Assignments" parent="menu_center_academic" action="action_center_assignment" sequence="1"/>
-        <menuitem id="menu_center_submission_child" name="Submissions" parent="menu_center_academic" action="action_center_submission" sequence="2"/>
-
+        <!--Action-->
         <record id="action_center_assignment" model="ir.actions.act_window">
             <field name="name">Assignments</field>
             <field name="res_model">center.assignment</field>
@@ -41,7 +13,12 @@
             </field>
         </record>
 
-        <!--Action-->
+        <record id="action_center_classroom" model="ir.actions.act_window">
+            <field name="name">Classroom</field>
+            <field name="res_model">center.classroom</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
         <record id="action_center_course" model="ir.actions.act_window">
             <field name="name">Course Templates</field>
             <field name="res_model">center.course</field>
@@ -70,6 +47,49 @@
             <field name="name">Submissions</field>
             <field name="res_model">center.submission</field>
             <field name="view_mode">list,form</field>
+        </record>
+
+
+        <record id="view_center_classroom_list" model="ir.ui.view">
+            <field name="name">center.classroom.list</field>
+            <field name="model">center.classroom</field>
+            <field name="arch" type="xml">
+                <list string="Classroom" default_order="floor">
+                    <field name="name"/>
+                    <field name="total_classes"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_center_classroom_form" model="ir.ui.view">
+            <field name="name">center.classroom.form</field>
+            <field name="model">center.classroom</field>
+            <field name="arch" type="xml">
+                <form string="Center Classroom">
+
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>Room <field name="name" readonly="1" class="text-primary"/></h1>
+                        </div>
+                        <group>
+                            <field name="floor" string="On Floor"/>
+                            <field name="direction" string="At Direction"/>
+                        </group>
+                        <notebook>
+                            <page string="Classes">
+                                <field name="class_ids" readonly="1">
+                                <list>
+                                    <field name="name" string="Class Code"/>
+                                    <field name="start_date" string="Start Date"/>
+                                    <field name="teacher_id" string="Teacher"/>
+                                    <field name="state" string="Status" widget="badge"/>
+                                </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
         </record>
 
         <record id="view_center_submission_list" model="ir.ui.view">
@@ -133,6 +153,11 @@
             <field name="arch" type="xml">
                 <form>
                     <sheet>
+                        <button name="action_view_teacher_schedule" type="object" class="oe_stat_button" icon="fa-calendar">
+                                <div class="o_stat_info">
+                                    <span class="o_stat_text">Teaching Schedule</span>
+                                </div>
+                        </button>
                         <div class="oe_title">
                             <h1><field name="name" placeholder="Teacher's Name..."/></h1>
                         </div>
@@ -196,11 +221,11 @@
             <field name="name">center.class.list</field>
             <field name="model">center.class</field>
             <field name="arch" type="xml">
-                <list string="Running Classes">
+                <list string="Running Classes" decoration-success="state=='active'" decoration-muted="state=='closed'" decoration-warning="state=='recruiting'">
                     <field name="name"/>
                     <field name="course_id"/>
                     <field name="start_date"/>
-                    <field name="state"/>
+                    <field name="classroom_id"/>
                 </list>
             </field>
         </record>
@@ -221,6 +246,7 @@
                                 <field name="course_id" readonly="state != 'recruiting'"/>
                                 <field name="start_date" readonly="state != 'recruiting'"/>
                                 <field name="end_date"/>
+                                <field name="classroom_id" string="Classroom" readonly="state != 'recruiting'"/>
                             </group>
                             <group string="Schedule Configuration">
                                 <field name="schedule_ids" nolabel="1" readonly="state != 'recruiting'">
@@ -312,9 +338,13 @@
             <field name="name">class.session.calendar</field>
             <field name="model">class.session</field>
             <field name="arch" type="xml">
-                <calendar string="Class Schedule" date_start="start_datetime" date_stop="end_datetime" color="class_id" mode="week" event_open_popup="true">
+                <calendar string="Class Schedule" date_start="start_datetime" date_stop="end_datetime" color="class_id" mode="week" event_open_popup="true"
+                          create="0"
+                          edit="0"
+                          delete="0">
                     <field name="name"/>
                     <field name="teacher_id"/>
+                    <field name="classroom_id"/>
                 </calendar>
             </field>
         </record>
@@ -359,5 +389,56 @@
                 </form>
             </field>
         </record>
+
+        <record id="action_center_all_schedules" model="ir.actions.act_window">
+            <field name="name">Master Schedule</field>
+            <field name="res_model">class.session</field>
+            <field name="view_mode">calendar,list</field>
+
+            <field name="domain">[]</field>
+
+            <field name="context">{'search_default_group_by_class': 1}</field>
+        </record>
+
+        <menuitem id="menu_center_all_schedules"
+          name="Master Schedule"
+          parent="menu_center_root"
+          action="action_center_all_schedules"
+          sequence="3"/>
+
+        <!--Menu-->
+        <menuitem id="menu_center_root" name="Center Management" sequence="10"/>
+
+        <menuitem id="menu_center_profiles" name="Human Resources" parent="menu_center_root" sequence="1"
+                  groups="base.group_erp_manager"/>
+        <menuitem id="menu_center_teacher_child" name="Teachers" parent="menu_center_profiles" action="action_center_teacher" sequence="1" groups="base.group_erp_manager"/>
+        <menuitem id="menu_center_student_child" name="Students" parent="menu_center_profiles" action="action_center_student" sequence="2" groups="base.group_erp_manager"/>
+
+         <menuitem id="menu_my_profile_teacher"
+                  name="My Profile"
+                  parent="menu_center_root"
+                  sequence="1"
+                  action="action_my_profile_teacher"
+                  groups="english_center.group_center_teacher"/>
+
+        <menuitem id="menu_my_profile_student"
+                  name="My Profile"
+                  parent="menu_center_root"
+                  sequence="1"
+                  action="action_my_profile_student"
+                  groups="english_center.group_center_student"/>
+
+        <menuitem id="menu_center_education" name="Education" parent="menu_center_root" sequence="2"/>
+        <menuitem id="menu_center_course_child" name="Course Templates" parent="menu_center_education" action="action_center_course" sequence="1"
+                  groups="base.group_erp_manager,english_center.group_center_teacher"/>
+        <menuitem id="menu_center_class_child" name="Active Classes" parent="menu_center_education" action="action_center_class" sequence="2"/>
+
+        <menuitem id="menu_center_academic" name="Academic" parent="menu_center_root" sequence="3"/>
+        <menuitem id="menu_center_assignment_child" name="Assignments" parent="menu_center_academic" action="action_center_assignment" sequence="1"/>
+        <menuitem id="menu_center_submission_child" name="Submissions" parent="menu_center_academic" action="action_center_submission" sequence="2"/>
+
+        <menuitem id ="menu_center_facilities" name="Facilities" parent="menu_center_root" sequence="4"/>
+        <menuitem id="menu_center_classroom" name="Classroom" parent="menu_center_facilities" action="action_center_classroom" sequence="1"/>
+
     </data>
 </odoo>

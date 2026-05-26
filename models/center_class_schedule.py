@@ -16,6 +16,6 @@ class CenterClassSchedule(models.Model):
 
     @api.constrains('start_time', 'end_time')
     def _check_time(self):
-        for rec in self:
-            if rec.start_time >= rec.end_time:
+        for record in self:
+            if record.start_time >= record.end_time:
                 raise ValidationError("Start time must be earlier than End time.")

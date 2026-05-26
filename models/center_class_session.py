@@ -7,6 +7,8 @@ class ClassSession(models.Model):
 
     name = fields.Char(string="Session Name", compute='_compute_name', store=True)
     class_id = fields.Many2one('center.class', string="Class", ondelete='cascade')
+    classroom_id = fields.Many2one('center.classroom', related="class_id.classroom_id", string="Classroom")
+
     sequence = fields.Integer(string="Session Number")
 
     start_datetime = fields.Datetime(string="Start Time", required=True)
