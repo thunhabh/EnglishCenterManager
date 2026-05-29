@@ -1,16 +1,17 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
 
-
+# model Assignment
 class CenterAssignment(models.Model):
     _name = 'center.assignment'
     _description = 'Class Assignments & Materials'
 
     name = fields.Char(string="Title", required=True)
     class_id = fields.Many2one('center.class', string="Class", required=True)
-    teacher_id = fields.Many2one('center.teacher', related='class_id.teacher_id', store=True, string="Teacher")
+    teacher_id = fields.Many2one('hr.employee', related='class_id.teacher_id', store=True, string="Teacher")
 
     description = fields.Char(string="Requirements")
+
     attachment_ids = fields.Many2many('ir.attachment', string="Attachments")
 
     due_date = fields.Datetime(string="Deadline")
@@ -35,10 +36,14 @@ class CenterAssignment(models.Model):
             user_id = self.env.user.id
             sub = record.submission_ids.filtered(lambda s: s.student_id.user_id.id == user_id)
 
-            if sub and sub.score:
-                record.state_for_student = 'graded'
-            elif sub:
-                record.state_for_student = 'submitted'
+            if sub:
+                last_sub = sub[-1]
+
+                if last_sub.score != -1:
+                    record.state_for_student = 'graded'
+                else:
+                    record.state_for_student = 'submitted'
+
             elif record.due_date and record.due_date < fields.Datetime.now():
                 record.state_for_student = 'overdue'
             else:
@@ -46,7 +51,7 @@ class CenterAssignment(models.Model):
 
             total_students = len(record.class_id.student_ids)
             submitted_count = len(record.submission_ids)
-            graded_count = len(record.submission_ids.filtered(lambda s: s.score >= 0))
+            graded_count = len(record.submission_ids.filtered(lambda s: s.score != -1))
 
             if graded_count == total_students and total_students > 0:
                 record.state_for_teacher = 'finished'
@@ -61,7 +66,7 @@ class CenterAssignment(models.Model):
     def _check_due_date(self):
         for rec in self:
             if rec.due_date and rec.due_date.date() < fields.Date.today():
-                raise ValidationError("Error: Due date cannot be in the past!")
+                raise ValidationError("Error: Due date can not be in the past!")
 
 
 class CenterSubmission(models.Model):
@@ -73,16 +78,14 @@ class CenterSubmission(models.Model):
     student_id = fields.Many2one('center.student', string="Student", required=True,
                                  default=lambda self: self._default_student())
 
-    attachment_ids = fields.Many2many(
-        'ir.attachment',
-        string='Attachment File',
-        required=True
-    )
+    submission_file = fields.Binary(string='Submission File', required=True, attachment=False)
     file_name = fields.Char(string="File Name")
 
     submission_date = fields.Datetime(string="Submission date", default=fields.Datetime.now)
 
-    score = fields.Float(string="Grade", default = -1)
+    download_url = fields.Char(string="Download Link", compute="_compute_download_url")
+
+    score = fields.Float(string="Grade", default=-1)
     feedback = fields.Text(string="Teacher Feedback")
 
     def _default_student(self):
@@ -91,16 +94,23 @@ class CenterSubmission(models.Model):
             return student.id
         return False
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        if self.env.user.has_group('english_center.group_center_student'):
-            for vals in vals_list:
-                if vals.get('score') or vals.get('feedback'):
-                    raise ValidationError("Security Alert: You cannot grade your own submission!")
-        return super(CenterSubmission, self).create(vals_list)
-
     def write(self, vals):
         if self.env.user.has_group('english_center.group_center_student'):
             if 'score' in vals or 'feedback' in vals:
                 raise ValidationError("Security Alert: You cannot alter the teacher's grade or feedback!")
+
+        if not self.env.user.has_group('english_center.group_center_student'):
+            if 'submission_file' in vals or 'file_name' in vals:
+                raise ValidationError(
+                    "Security Alert: Teacher can't modify submission file or file name!")
         return super(CenterSubmission, self).write(vals)
+
+    def _compute_download_url(self):
+        for record in self:
+            record_sudo = record.sudo()
+
+            if record_sudo.submission_file:
+                file_name_safe = record_sudo.file_name or 'student_submission.bin'
+                record.download_url = f'/web/content/center.submission/{record.id}/submission_file/{file_name_safe}?download=true'
+            else:
+                record.download_url = "No file"

@@ -8,8 +8,9 @@ from odoo.exceptions import ValidationError
 
 class CenterClass(models.Model):
     _name = 'center.class'
-    _description = 'Running Class'
+    _description = 'Manage Classes'
 
+    #Name will be generated when create = The Course Template's Name + mm/yy
     name = fields.Char(string="Class Code", readonly=True, copy=False, default='New')
     course_id = fields.Many2one('center.course', string="Course", required=True)
 
@@ -26,7 +27,7 @@ class CenterClass(models.Model):
 
     available_student_ids = fields.Many2many(
         'center.student',
-        relation='class_available_student_rel',  # Thêm relation để tránh trùng lặp bảng tạm với student_ids
+        relation='class_available_student_rel',  # naming relation avoiding duplication
         compute='_compute_available_students'
     )
 
@@ -36,20 +37,24 @@ class CenterClass(models.Model):
         domain="[('id', 'in', available_student_ids)]"
     )
     session_ids = fields.One2many('class.session', 'class_id', string="Sessions Timeline")
-    classroom_id = fields.Many2one('center.classroom',
-                                   string="Classroom",
-                                   domain="[('id', 'in', available_classroom_ids)]")
+
     available_classroom_ids = fields.Many2many(
         'center.classroom',
         compute='_compute_available_classrooms'
     )
+    classroom_id = fields.Many2one('center.classroom',
+                                   string="Classroom",
+                                   domain="[('id', 'in', available_classroom_ids)]")
+
     assignment_ids = fields.One2many('center.assignment', 'class_id', string="Assignments")
-    available_teacher_ids = fields.Many2many('center.teacher', compute='_compute_available_teachers')
+
+    available_teacher_ids = fields.Many2many('hr.employee', compute='_compute_available_teachers')
     teacher_id = fields.Many2one(
-        'center.teacher',
+        'hr.employee',
         string="Teacher",
         domain="[('id', 'in', available_teacher_ids)]"
     )
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -61,8 +66,15 @@ class CenterClass(models.Model):
 
     @api.depends('schedule_ids.day_of_week', 'schedule_ids.start_time', 'schedule_ids.end_time')
     def _compute_available_teachers(self):
+        is_student = self.env.user.has_group('english_center.group_center_student')
+
         for record in self:
-            all_teachers = self.env['center.teacher'].search([])
+            if is_student:
+                record.available_teacher_ids = False
+                continue
+
+        for record in self:
+            all_teachers = self.env['hr.employee'].search([])
 
             if not record.schedule_ids:
                 record.available_teacher_ids = all_teachers.ids
@@ -93,6 +105,7 @@ class CenterClass(models.Model):
 
             record.available_teacher_ids = qualified
 
+    @api.depends('schedule_ids.day_of_week', 'schedule_ids.start_time', 'schedule_ids.end_time')
     def _compute_available_classrooms(self):
         for record in self:
             all_classrooms = self.env['center.classroom'].search([])
@@ -126,34 +139,10 @@ class CenterClass(models.Model):
 
             record.available_classroom_ids = qualified
 
-
-    @api.constrains('student_ids', 'schedule_ids', 'startdate')
-    def _check_student_schedule_overlap(self):
-        """ Prevent assigning a student to classes with overlapping schedules. """
-        for record in self:
-            if record.state == 'closed' or not record.schedule_ids:
-                continue
-
-            for student in record.student_ids:
-                # Find other active/recruiting classes this student is enrolled in
-                overlapping_classes = self.env['center.class'].search([
-                    ('id', '!=', record.id),
-                    ('state', 'in', ['recruiting', 'active']),
-                    ('student_ids', 'in', student.id)
-                ])
-
-                for other_class in overlapping_classes:
-                    for my_sched in record.schedule_ids:
-                        for other_sched in other_class.schedule_ids:
-                            # Check overlap on the same day of the week
-                            if str(my_sched.day_of_week) == str(other_sched.day_of_week):
-                                if my_sched.start_time < other_sched.end_time and my_sched.end_time > other_sched.start_time:
-                                    raise ValidationError(
-                                        f"Student '{student.name}' has a schedule conflict with class '{other_class.name}'.")
-
+    @api.constrains('start_date')
     def _check_start_date(self):
-        for rec in self:
-            if rec.start_date and rec.start_date < fields.Date.today():
+        for record in self:
+            if record.start_date and record.start_date < fields.Date.today():
                 raise ValidationError("Error: Start date cannot be in the past.")
 
     def action_active_class(self):
@@ -207,6 +196,42 @@ class CenterClass(models.Model):
 
             rec.end_date = current_date - timedelta(days=1)
 
+    @api.depends('schedule_ids.day_of_week', 'schedule_ids.start_time', 'schedule_ids.end_time')
+    def _compute_available_students(self):
+        for record in self:
+            all_students = self.env['center.student'].search([])
+
+            if not record.schedule_ids:
+                record.available_student_ids = all_students.ids
+                continue
+
+            qualified = []
+            for student in all_students:
+                is_overlap = False
+
+                # Find other classes that this student attending
+                # 'Active' + 'Recuriting' classes
+                busy_classes = self.env['center.class'].search([
+                    ('id', '!=', record._origin.id if record._origin else record.id),
+                    ('state', 'in', ['active', 'recruiting']),
+                    ('student_ids', 'in', student.id)
+                ])
+
+                for busy_class in busy_classes:
+                    for busy_sched in busy_class.schedule_ids:
+                        for current_sched in record.schedule_ids:
+                            if str(busy_sched.day_of_week) == str(current_sched.day_of_week):
+                                if current_sched.start_time < busy_sched.end_time and current_sched.end_time > busy_sched.start_time:
+                                    is_overlap = True
+                                    break
+                        if is_overlap: break
+                    if is_overlap: break
+
+                if not is_overlap:
+                    qualified.append(student.id)
+
+            record.available_student_ids = qualified
+
     def action_view_class_schedule(self):
         return {
             'name': f'Schedule: {self.name}',
@@ -216,43 +241,3 @@ class CenterClass(models.Model):
             'domain': [('class_id', '=', self.id)],
             'context': {'default_class_id': self.id},
         }
-
-    @api.depends('schedule_ids.day_of_week', 'schedule_ids.start_time', 'schedule_ids.end_time')
-    def _compute_available_students(self):
-        for record in self:
-            all_students = self.env['center.student'].search([])
-
-            # Nếu lớp chưa có lịch thì tất cả học sinh đều hợp lệ
-            if not record.schedule_ids:
-                record.available_student_ids = all_students.ids
-                continue
-
-            qualified = []
-            for student in all_students:
-                is_overlap = False
-
-                # Tìm các lớp học khác mà học sinh này đang tham gia
-                # Lưu ý: Tìm cả lớp đang học ('active') và đang tuyển sinh ('recruiting')
-                busy_classes = self.env['center.class'].search([
-                    ('id', '!=', record._origin.id if record._origin else record.id),
-                    ('state', 'in', ['active', 'recruiting']),
-                    ('student_ids', 'in', student.id)  # SỰ KHÁC BIỆT LỚN NHẤT: Dùng 'in' cho Many2many
-                ])
-
-                for busy_class in busy_classes:
-                    for busy_sched in busy_class.schedule_ids:
-                        for current_sched in record.schedule_ids:
-                            # So sánh nếu trùng thứ trong tuần
-                            if str(busy_sched.day_of_week) == str(current_sched.day_of_week):
-                                # Công thức kiểm tra giao nhau (Overlap) về thời gian
-                                if current_sched.start_time < busy_sched.end_time and current_sched.end_time > busy_sched.start_time:
-                                    is_overlap = True
-                                    break
-                        if is_overlap: break
-                    if is_overlap: break
-
-                # Nếu không bị trùng lịch ở bất kỳ lớp nào, thêm vào danh sách hợp lệ
-                if not is_overlap:
-                    qualified.append(student.id)
-
-            record.available_student_ids = qualified

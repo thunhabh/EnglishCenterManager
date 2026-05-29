@@ -1,4 +1,3 @@
-from . import center_certificate_tag
 from . import center_classroom
 from . import center_class
 from . import center_class_session
