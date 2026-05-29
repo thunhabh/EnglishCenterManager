@@ -1,31 +1,10 @@
 from odoo import fields, models, api
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, AccessError
 
 
 class CenterTeacher(models.Model):
-    _name = 'center.teacher'
+    _inherit = 'hr.employee'
     _description = 'Teacher Profile'
-
-    name = fields.Char(string="Teacher Name", required=True)
-    user_id = fields.Many2one('res.users', string='Linked Account', readonly=True)
-
-    work_email = fields.Char(string="Work Email", required=True)
-    work_phone = fields.Char(string="Work Phone", required=True)
-    identification_id = fields.Char(required=True, string="National ID")
-
-    expertise = fields.Selection(
-        string='Expertise',
-        required=True,
-        selection=[
-            ('primary', "Primary School"),
-            ('secondary', "Secondary School"),
-            ('highschool', "High School"),
-            ('college', "College"),
-            ('ielts', 'IELTS')
-        ]
-    )
-
-    certificate_tag_ids = fields.Many2many("center.certificate.tag", string="Certificates", required=True)
 
     _check_unique_email = models.Constraint('UNIQUE(work_email)', 'The email must be unique.')
     _check_unique_phone = models.Constraint('UNIQUE(work_phone)', 'The phone number must be unique.')
@@ -39,6 +18,9 @@ class CenterTeacher(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        if not self.env.user.has_group('base.group_erp_manager'):
+            raise AccessError("Strict Security: Only Administrators are allowed to create new teachers.")
+
         for vals in vals_list:
             email = vals.get('work_email')
             if email:
@@ -58,13 +40,13 @@ class CenterTeacher(models.Model):
                 vals['user_id'] = new_user.id
 
         return super(CenterTeacher, self).create(vals_list)
-    
+
     def action_view_teacher_schedule(self):
         return {
             'name': 'Teaching Schedule',
             'type': 'ir.actions.act_window',
             'res_model': 'class.session',
             'view_mode': 'calendar,list',
-            'domain': [('teacher_id', '=', self.id)],
+            'domain': [('class_id.teacher_id', '=', self.id)],
             'context': {'default_teacher_id': self.id},
         }

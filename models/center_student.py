@@ -56,6 +56,12 @@ class CenterStudent(models.Model):
 
         return super(CenterStudent, self).create(vals_list)
 
+    def write(self, vals):
+        if 'email' in vals and self.env.user.has_group('english_center.group_center_student'):
+            raise ValidationError("You are not allowed to change your registered email address!")
+
+        return super(CenterStudent, self).write(vals)
+
     def action_view_student_schedule(self):
         """ Open the study schedule for this student """
         return {
@@ -67,8 +73,3 @@ class CenterStudent(models.Model):
             'context': {'default_student_ids': [(4, self.id)]},
         }
 
-    def write(self, vals):
-        if 'email' in vals and self.env.user.has_group('english_center.group_center_student'):
-            raise ValidationError("You are not allowed to change your registered email address!")
-
-        return super(CenterStudent, self).write(vals)

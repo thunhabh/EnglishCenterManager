@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-
-
-        <!--Action-->
         <record id="action_center_assignment" model="ir.actions.act_window">
             <field name="name">Assignments</field>
             <field name="res_model">center.assignment</field>
             <field name="view_mode">list,form</field>
-            <field name="help" type="html">
-                <p class="o_view_nocontent_smiling_face">Create your first assignment!</p>
-            </field>
         </record>
 
         <record id="action_center_classroom" model="ir.actions.act_window">
@@ -36,11 +30,12 @@
             <field name="res_model">center.student</field>
             <field name="view_mode">list,form</field>
         </record>
-
         <record id="action_center_teacher" model="ir.actions.act_window">
             <field name="name">Teacher Profiles</field>
-            <field name="res_model">center.teacher</field>
+            <field name="res_model">hr.employee</field>
             <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="english_center.view_center_teacher_search_clean"/>
+            <field name="view_ids" eval="[(5, 0, 0), (0, 0, {'view_mode': 'list', 'view_id': ref('english_center.view_center_teacher_list_clean')}), (0, 0, {'view_mode': 'form', 'view_id': ref('english_center.view_center_teacher_form_clean')})]"/>
         </record>
 
         <record id="action_center_submission" model="ir.actions.act_window">
@@ -49,6 +44,13 @@
             <field name="view_mode">list,form</field>
         </record>
 
+        <record id="action_center_all_schedules" model="ir.actions.act_window">
+            <field name="name">Master Schedule</field>
+            <field name="res_model">class.session</field>
+            <field name="view_mode">calendar,list</field>
+            <field name="domain">[]</field>
+            <field name="context">{'search_default_group_by_class': 1}</field>
+        </record>
 
         <record id="view_center_classroom_list" model="ir.ui.view">
             <field name="name">center.classroom.list</field>
@@ -66,8 +68,14 @@
             <field name="model">center.classroom</field>
             <field name="arch" type="xml">
                 <form string="Center Classroom">
-
                     <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_classroom_schedule" type="object" class="oe_stat_button" icon="fa-calendar">
+                                <div class="o_stat_info">
+                                    <span class="o_stat_text">Room Schedule</span>
+                                </div>
+                            </button>
+                        </div>
                         <div class="oe_title">
                             <h1>Room <field name="name" readonly="1" class="text-primary"/></h1>
                         </div>
@@ -96,7 +104,10 @@
             <field name="name">center.submission.list</field>
             <field name="model">center.submission</field>
             <field name="arch" type="xml">
-                <list string="Student Submissions" default_order="submission_date desc" decoration-warning="score == -1" decoration-success="score != -1">
+                <list string="Student Submissions"
+                      default_order="submission_date desc"
+                      decoration-warning="score == -1"
+                      decoration-success="score != -1">
                     <field name="assignment_id"/>
                     <field name="student_id"/>
                     <field name="submission_date"/>
@@ -104,7 +115,6 @@
                 </list>
             </field>
         </record>
-
         <record id="view_center_submission_form" model="ir.ui.view">
             <field name="name">center.submission.form</field>
             <field name="model">center.submission</field>
@@ -115,62 +125,23 @@
                             <h1>Submission for <field name="student_id" readonly="1" force_save="1" class="text-primary"/></h1>
                         </div>
                         <group>
-                            <group string="Upload Your Work">
+                            <group string="Homework Submission">
                                 <field name="assignment_id" domain="[('class_id.student_ids.user_id', '=', uid)]"/>
-
                                 <field name="file_name" invisible="1"/>
-                                <field name="attachment_ids" filename="file_name" widget="many2many_binary"/>
+                                <field name="submission_file" filename="file_name"/>
                                 <field name="submission_date" readonly="1"/>
                             </group>
-                            <group string="Teacher's Evaluation">
-                                <field name="score"/>
-                                <field name="feedback"/>
-                            </group>
-                        </group>
-                    </sheet>
-                </form>
-            </field>
-        </record>
+                                <group string="Teacher's Evaluation" groups="english_center.group_center_teacher,base.group_erp_manager">
+                                    <field name="score"/>
+                                    <field name="feedback"/>
+                                </group>
 
-        <record id="view_center_teacher_list" model="ir.ui.view">
-            <field name="name">center.teacher.list</field>
-            <field name="model">center.teacher</field>
-            <field name="priority">50</field>
-            <field name="arch" type="xml">
-                <list string="Teacher Profiles">
-                    <field name="name"/>
-                    <field name="work_email"/>
-                    <field name="work_phone"/>
-                    <field name="expertise"/>
-                </list>
-            </field>
-        </record>
-
-        <record id="view_center_teacher_form" model="ir.ui.view">
-            <field name="name">center.teacher.form</field>
-            <field name="model">center.teacher</field>
-            <field name="priority">50</field>
-            <field name="arch" type="xml">
-                <form>
-                    <sheet>
-                        <button name="action_view_teacher_schedule" type="object" class="oe_stat_button" icon="fa-calendar">
-                                <div class="o_stat_info">
-                                    <span class="o_stat_text">Teaching Schedule</span>
-                                </div>
-                        </button>
-                        <div class="oe_title">
-                            <h1><field name="name" placeholder="Teacher's Name..."/></h1>
-                        </div>
-                        <group>
-                            <group string="Contact &amp; ID">
-                                <field name="work_email"/>
-                                <field name="work_phone"/>
-                                <field name="identification_id"/>
-                            </group>
-                            <group string="Professional Info">
-                                <field name="expertise"/>
-                                <field name="certificate_tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
-                            </group>
+                                <group string="Teacher's Evaluation"
+                                       groups="english_center.group_center_student"
+                                        invisible="score == -1 and not feedback">
+                                        <field name="score" readonly="1"/>
+                                        <field name="feedback" readonly="1"/>
+                                </group>
                         </group>
                     </sheet>
                 </form>
@@ -188,7 +159,6 @@
                 </list>
             </field>
         </record>
-
         <record id="view_center_course_form" model="ir.ui.view">
             <field name="name">center.course.form</field>
             <field name="model">center.course</field>
@@ -229,7 +199,6 @@
                 </list>
             </field>
         </record>
-
         <record id="view_center_class_form" model="ir.ui.view">
             <field name="name">center.class.form</field>
             <field name="model">center.class</field>
@@ -240,6 +209,13 @@
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_class_schedule" type="object" class="oe_stat_button" icon="fa-calendar">
+                                <div class="o_stat_info">
+                                    <span class="o_stat_text">Class Schedule</span>
+                                </div>
+                            </button>
+                        </div>
                         <div class="oe_title"><h1><field name="name"/></h1></div>
                         <group>
                             <group string="Configuration">
@@ -259,7 +235,7 @@
                             </group>
                         </group>
                         <group>
-                            <field name="teacher_id" readonly="state != 'recruiting'"/>
+                            <field name="teacher_id" readonly="state != 'recruiting'" context="{'form_view_ref': 'english_center.view_center_teacher_form_clean'}"/>
                         </group>
                         <notebook>
                             <page string="Sessions Timeline">
@@ -281,7 +257,9 @@
                                 </field>
                             </page>
                             <page string="Assignments">
+                                <list>
                                     <field name="assignment_ids" readonly="1"/>
+                                </list>
                             </page>
                         </notebook>
                     </sheet>
@@ -293,7 +271,7 @@
             <field name="name">center.student.list</field>
             <field name="model">center.student</field>
             <field name="arch" type="xml">
-                <list string="Student Profiles">
+                <list string="Student Profiles" editable="bottom">
                     <field name="name"/>
                     <field name="email"/>
                     <field name="parent_name"/>
@@ -333,7 +311,6 @@
             </field>
         </record>
 
-        <!--Draw calendar block-->
         <record id="view_class_session_calendar" model="ir.ui.view">
             <field name="name">class.session.calendar</field>
             <field name="model">class.session</field>
@@ -390,47 +367,18 @@
             </field>
         </record>
 
-        <record id="action_center_all_schedules" model="ir.actions.act_window">
-            <field name="name">Master Schedule</field>
-            <field name="res_model">class.session</field>
-            <field name="view_mode">calendar,list</field>
+        <menuitem id="menu_center_root" name="English Center" sequence="10"/>
 
-            <field name="domain">[]</field>
+        <menuitem id="menu_center_manager" name="Management" parent="menu_center_root" sequence="1" groups="base.group_erp_manager"/>
+        <menuitem id="menu_center_teacher_child" name="Teachers" parent="menu_center_manager" action="action_center_teacher" sequence="1" groups="base.group_erp_manager"/>
+        <menuitem id="menu_center_student_child" name="Students" parent="menu_center_manager" action="action_center_student" sequence="2" groups="base.group_erp_manager"/>
+        <menuitem id="menu_center_all_schedules" name="Master Schedule" parent="menu_center_manager" action="action_center_all_schedules" sequence="3"/>
 
-            <field name="context">{'search_default_group_by_class': 1}</field>
-        </record>
-
-        <menuitem id="menu_center_all_schedules"
-          name="Master Schedule"
-          parent="menu_center_root"
-          action="action_center_all_schedules"
-          sequence="3"/>
-
-        <!--Menu-->
-        <menuitem id="menu_center_root" name="Center Management" sequence="10"/>
-
-        <menuitem id="menu_center_profiles" name="Human Resources" parent="menu_center_root" sequence="1"
-                  groups="base.group_erp_manager"/>
-        <menuitem id="menu_center_teacher_child" name="Teachers" parent="menu_center_profiles" action="action_center_teacher" sequence="1" groups="base.group_erp_manager"/>
-        <menuitem id="menu_center_student_child" name="Students" parent="menu_center_profiles" action="action_center_student" sequence="2" groups="base.group_erp_manager"/>
-
-         <menuitem id="menu_my_profile_teacher"
-                  name="My Profile"
-                  parent="menu_center_root"
-                  sequence="1"
-                  action="action_my_profile_teacher"
-                  groups="english_center.group_center_teacher"/>
-
-        <menuitem id="menu_my_profile_student"
-                  name="My Profile"
-                  parent="menu_center_root"
-                  sequence="1"
-                  action="action_my_profile_student"
-                  groups="english_center.group_center_student"/>
+        <menuitem id="menu_my_profile_teacher" name="My Profile" parent="menu_center_root" sequence="1" action="action_my_profile_teacher" groups="english_center.group_center_teacher"/>
+        <menuitem id="menu_my_profile_student" name="My Profile" parent="menu_center_root" sequence="1" action="action_my_profile_student" groups="english_center.group_center_student"/>
 
         <menuitem id="menu_center_education" name="Education" parent="menu_center_root" sequence="2"/>
-        <menuitem id="menu_center_course_child" name="Course Templates" parent="menu_center_education" action="action_center_course" sequence="1"
-                  groups="base.group_erp_manager,english_center.group_center_teacher"/>
+        <menuitem id="menu_center_course_child" name="Course Templates" parent="menu_center_education" action="action_center_course" sequence="1" groups="base.group_erp_manager,english_center.group_center_teacher"/>
         <menuitem id="menu_center_class_child" name="Active Classes" parent="menu_center_education" action="action_center_class" sequence="2"/>
 
         <menuitem id="menu_center_academic" name="Academic" parent="menu_center_root" sequence="3"/>
@@ -438,7 +386,12 @@
         <menuitem id="menu_center_submission_child" name="Submissions" parent="menu_center_academic" action="action_center_submission" sequence="2"/>
 
         <menuitem id ="menu_center_facilities" name="Facilities" parent="menu_center_root" sequence="4"/>
-        <menuitem id="menu_center_classroom" name="Classroom" parent="menu_center_facilities" action="action_center_classroom" sequence="1"/>
+        <menuitem id="menu_center_academic" name="Academic" parent="menu_center_root" sequence="3"/>
+        <menuitem id="menu_center_assignment_child" name="Assignments" parent="menu_center_academic" action="action_center_assignment" sequence="1"/>
+        <menuitem id="menu_center_submission_child" name="Submissions" parent="menu_center_academic" action="action_center_submission" sequence="2"/>
 
+        <menuitem id ="menu_center_facilities" name="Facilities" parent="menu_center_root" sequence="4"/>
+
+        <menuitem id="menu_center_classroom" name="Classroom" parent="menu_center_facilities" action="action_center_classroom" sequence="1"/>
     </data>
 </odoo>

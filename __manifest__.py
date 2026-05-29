@@ -4,7 +4,7 @@
     "category": "Education",
     "author": "NHAT",
     "depends": [
-        "base",
+        "base","hr",
     ],
     "data": [
         'security/security_groups.xml',

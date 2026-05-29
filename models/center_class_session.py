@@ -6,6 +6,7 @@ class ClassSession(models.Model):
     _order = 'start_datetime asc'
 
     name = fields.Char(string="Session Name", compute='_compute_name', store=True)
+    #Class delete -> Sessions delete
     class_id = fields.Many2one('center.class', string="Class", ondelete='cascade')
     classroom_id = fields.Many2one('center.classroom', related="class_id.classroom_id", string="Classroom")
 
@@ -14,7 +15,7 @@ class ClassSession(models.Model):
     start_datetime = fields.Datetime(string="Start Time", required=True)
     end_datetime = fields.Datetime(string="End Time", required=True)
 
-    teacher_id = fields.Many2one('center.teacher', related='class_id.teacher_id', store=True, string="Teacher")
+    teacher_id = fields.Many2one('hr.employee', related='class_id.teacher_id', store=True, string="Teacher")
     student_ids = fields.Many2many('center.student', related='class_id.student_ids', string="Students")
 
     @api.depends('class_id', 'sequence')
