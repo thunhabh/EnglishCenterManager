@@ -50,3 +50,33 @@ class CenterTeacher(models.Model):
             'domain': [('class_id.teacher_id', '=', self.id)],
             'context': {'default_teacher_id': self.id},
         }
+
+    from odoo import models, api
+
+    class HrEmployee(models.Model):
+        _inherit = 'hr.employee'
+
+        @api.model
+        def action_open_teacher_profile(self):
+            teacher = self.search([('user_id', '=', self.env.uid)], limit=1)
+            if teacher:
+                return {
+                    'type': 'ir.actions.act_window',
+                    'name': 'My Profile',
+                    'res_model': 'hr.employee',
+                    'view_mode': 'form',
+                    'res_id': teacher.id,
+                    'target': 'current',
+                    'view_id': self.env.ref('english_center.view_center_teacher_form_clean').id,
+                }
+
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Access Denied',
+                    'message': 'Your Account is not linked to any teacher!',
+                    'type': 'danger',
+                    'sticky': False,
+                }
+            }

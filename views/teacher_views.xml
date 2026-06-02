@@ -78,24 +78,12 @@
             </field>
         </record>
 
-
-
         <record id="action_my_profile_teacher" model="ir.actions.server">
             <field name="name">Open Teacher Profile</field>
             <field name="model_id" ref="hr.model_hr_employee"/>
             <field name="state">code</field>
             <field name="code">
-teacher = env['hr.employee'].search([('user_id', '=', env.uid)], limit=1)
-if teacher:
-    action = {
-        'type': 'ir.actions.act_window',
-        'name': 'My Profile',
-        'res_model': 'hr.employee',
-        'view_mode': 'form',
-        'res_id': teacher.id,
-        'target': 'current',
-        'view_id': env.ref('english_center.view_center_teacher_form_clean').id,
-    }
+                action = model.action_open_teacher_profile()
             </field>
         </record>
 

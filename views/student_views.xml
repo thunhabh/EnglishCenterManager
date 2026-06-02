@@ -18,19 +18,10 @@
 
         <record id="action_my_profile_student" model="ir.actions.server">
             <field name="name">Open Student Profile</field>
-            <field name="model_id" ref="model_center_student"/>
+            <field name="model_id" ref="english_center.model_center_student"/>
             <field name="state">code</field>
             <field name="code">
-student = env['center.student'].search([('user_id', '=', env.uid)], limit=1)
-if student:
-    action = {
-        'type': 'ir.actions.act_window',
-        'name': 'My Profile',
-        'res_model': 'center.student',
-        'view_mode': 'form',
-        'res_id': student.id,
-        'target': 'current',
-        }
+                action = model.action_open_my_profile()
             </field>
         </record>
 

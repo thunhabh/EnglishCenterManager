@@ -63,7 +63,6 @@ class CenterStudent(models.Model):
         return super(CenterStudent, self).write(vals)
 
     def action_view_student_schedule(self):
-        """ Open the study schedule for this student """
         return {
             'name': 'Study Schedule',
             'type': 'ir.actions.act_window',
@@ -71,5 +70,29 @@ class CenterStudent(models.Model):
             'view_mode': 'calendar,list',
             'domain': [('student_ids', 'in', self.id)],
             'context': {'default_student_ids': [(4, self.id)]},
+        }
+
+    @api.model
+    def action_open_my_profile(self):
+        student = self.search([('user_id', '=', self.env.uid)], limit=1)
+        if student:
+            return {
+                'type': 'ir.actions.act_window',
+                'name': 'My Profile',
+                'res_model': 'center.student',
+                'view_mode': 'form',
+                'res_id': student.id,
+                'target': 'current',
+            }
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Access Denied',
+                'message': 'Your Account is not linked to any student!',
+                'type': 'danger',
+                'sticky': False,
+            }
         }
 
