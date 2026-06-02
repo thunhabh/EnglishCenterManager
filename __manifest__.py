@@ -11,8 +11,13 @@
         'security/ir.model.access.csv',
         'security/security_rules.xml',
 
-        'views/teacher_views.xml',
+        'views/assignment_views.xml',
+        'views/class_views.xml',
+        'views/classroom_views.xml',
+        'views/course_views.xml',
         'views/student_views.xml',
+        'views/submission_views.xml',
+        'views/teacher_views.xml',
 
         'views/center_menus_views.xml',
     ],
