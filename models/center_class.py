@@ -170,7 +170,7 @@ class CenterClass(models.Model):
 
     def _compute_class_revenue(self):
         for rec in self:
-            histories = self.env['center.debt.history'].search([('class_id', '=', rec.id)])
+            histories = self.env['center.billing.history'].search([('class_id', '=', rec.id)])
             rec.total_revenue = sum(histories.mapped('amount'))
 
     @api.model_create_multi

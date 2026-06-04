@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data noupdate="1">
-        <record id="ir_cron_auto_add_debt" model="ir.cron">
-            <field name="name">Billing: Auto Record Debt for Passed Sessions</field>
+        <record id="ir_cron_auto_add_bills" model="ir.cron">
+            <field name="name">Billing: Auto Record Bills for Passed Sessions</field>
             <field name="model_id" ref="model_class_session"/>
             <field name="state">code</field>
-            <field name="code">model.cron_add_debt_passed_sessions()</field>
+            <field name="code">model.cron_add_bills_passed_sessions()</field>
             <field name="interval_number">1</field>
             <field name="interval_type">hours</field>
             <field name="active" eval="True"/>

@@ -18,8 +18,11 @@
         'views/student_views.xml',
         'views/submission_views.xml',
         'views/teacher_views.xml',
+        'views/center_billing_views.xml',
 
         'views/center_menus_views.xml',
+
+        'data/ir_cron_data.xml',
     ],
     'application': True,
     'license': 'LGPL-3',

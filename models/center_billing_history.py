@@ -1,9 +1,9 @@
 from odoo import models, fields, api
 from datetime import datetime
 
-class CenterDebtHistory(models.Model):
-    _name = 'center.debt.history'
-    _description = 'Student Debt & Revenue Logs'
+class CenterBillingHistory(models.Model):
+    _name = 'center.billing.history'
+    _description = 'Student Billing Logs'
     _order = 'execution_date desc'
 
     student_id = fields.Many2one('center.student', string="Student", required=True, readonly=True)
@@ -11,5 +11,5 @@ class CenterDebtHistory(models.Model):
     course_id = fields.Many2one('center.course', string="Course", related='class_id.course_id', store=True)
     session_id = fields.Many2one('class.session', string="Session", required=True, readonly=True)
 
-    amount = fields.Float(string="Debt Added (Revenue)", required=True, readonly=True)
+    amount = fields.Float(string="Billing Added", required=True, readonly=True)
     execution_date = fields.Datetime(string="Recorded Time", default=fields.Datetime.now, readonly=True)

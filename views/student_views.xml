@@ -26,7 +26,7 @@
                     <field name="email"/>
                     <field name="parent_name"/>
                     <field name="parent_phone"/>
-                    <field name="debt"/>
+                    <field name="billing"/>
                 </list>
             </field>
         </record>
@@ -43,9 +43,9 @@
                                     <span class="o_stat_text">Study Schedule</span>
                                 </div>
                             </button>
-                            <button name="action_student_my_debt_history" type="object" class="oe_stat_button" icon="oi-archive">
+                            <button name="action_student_my_bills_history" type="object" class="oe_stat_button" icon="oi-archive">
                                 <div class="o_stat_info">
-                                    <span class="o_stat_text">Debt</span>
+                                    <span class="o_stat_text">Bills</span>
                                 </div>
                             </button>
                         </div>
@@ -54,7 +54,7 @@
                             <group string="Account Information">
                                 <field name="email"/>
                                 <field name="user_id" readonly="1"/>
-                                <field name="debt"/>
+                                <field name="billing"/>
                             </group>
                             <group string="Parent">
                                 <field name="parent_name"/>

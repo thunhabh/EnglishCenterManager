@@ -6,4 +6,4 @@ from . import center_student
 from . import center_teacher
 from . import center_class_schedule
 from . import academic
-from . import center_debt_history
+from . import center_billing_history

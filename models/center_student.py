@@ -12,7 +12,7 @@ class CenterStudent(models.Model):
     parent_phone = fields.Char(string="Parent Phone", required=True)
 
     user_id = fields.Many2one('res.users', string='Student Account', ondelete='cascade')
-    debt = fields.Float(string="Debt Balance", default=0.0)
+    billing = fields.Float(string="Billing Balance", default=0.0)
 
     registered_course_ids = fields.Many2many(
         'center.course',
@@ -103,13 +103,13 @@ class CenterStudent(models.Model):
             }
         }
 
-    def action_student_my_debt_history(self):
+    def action_student_my_bills_history(self):
         self.ensure_one()
 
         return {
-            'name': f'Lịch sử Công nợ: {self.name}',
+            'name': f'Billing History: {self.name}',
             'type': 'ir.actions.act_window',
-            'res_model': 'center.debt.history',
+            'res_model': 'center.billing.history',
             'view_mode': 'list',
             'domain': [('student_id', '=', self.id)],
             'context': {'default_student_id': self.id},
