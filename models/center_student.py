@@ -12,9 +12,16 @@ class CenterStudent(models.Model):
     parent_phone = fields.Char(string="Parent Phone", required=True)
 
     user_id = fields.Many2one('res.users', string='Student Account', ondelete='cascade')
-    credit = fields.Integer(string="Credits (Sessions left)", default=0)
     debt = fields.Float(string="Debt Balance", default=0.0)
 
+    registered_course_ids = fields.Many2many(
+        'center.course',
+        'course_student_registration_rel',
+        'student_id',
+        'course_id',
+        string="My Registered Courses",
+        readonly=True
+    )
     class_ids = fields.Many2many('center.class', string="Enrolled Classes")
 
     _check_unique = models.Constraint(
@@ -94,5 +101,17 @@ class CenterStudent(models.Model):
                 'type': 'danger',
                 'sticky': False,
             }
+        }
+
+    def action_student_my_debt_history(self):
+        self.ensure_one()
+
+        return {
+            'name': f'Lịch sử Công nợ: {self.name}',
+            'type': 'ir.actions.act_window',
+            'res_model': 'center.debt.history',
+            'view_mode': 'list',
+            'domain': [('student_id', '=', self.id)],
+            'context': {'default_student_id': self.id},
         }
 

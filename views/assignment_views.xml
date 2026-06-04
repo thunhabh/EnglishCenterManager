@@ -61,7 +61,7 @@
                                 <separator string="Attachments"/>
                                 <field name="attachment_ids" widget="many2many_binary"/>
                             </page>
-                            <page string="Submissions Overview">
+                            <page string="Submissions Overview" groups="base.group_erp_manager,english_center.group_center_teacher">
                                 <field name="submission_ids" readonly="1">
                                     <list>
                                         <field name="student_id"/>

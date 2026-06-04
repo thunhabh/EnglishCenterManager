@@ -15,7 +15,7 @@
                       default_order="submission_date desc"
                       decoration-warning="score == -1"
                       decoration-success="score != -1">
-                    <field name="assignment_id"/>
+                    <field name="assignment_id" domain="[('class_id.student_ids.user_id', '=', uid)]" required="1"/>
                     <field name="student_id"/>
                     <field name="submission_date"/>
                     <field name="score" widget="badge" invisible="score == -1"/>

@@ -14,20 +14,23 @@
         <menuitem id="menu_center_manager" name="Management" parent="menu_center_root" sequence="1" groups="base.group_erp_manager"/>
         <menuitem id="menu_center_teacher_child" name="Teachers" parent="menu_center_manager" action="action_center_teacher" sequence="1" groups="base.group_erp_manager"/>
         <menuitem id="menu_center_student_child" name="Students" parent="menu_center_manager" action="action_center_student" sequence="2" groups="base.group_erp_manager"/>
-        <menuitem id="menu_center_all_schedules" name="Master Schedule" parent="menu_center_manager" action="action_center_all_schedules" sequence="3"/>
+        <menuitem id="menu_center_all_schedules" name="Master Schedule" parent="menu_center_manager" action="action_center_all_schedules" sequence="3" groups="base.group_erp_manager"/>
 
         <menuitem id="menu_my_profile_teacher" name="My Profile" parent="menu_center_root" sequence="1" action="action_my_profile_teacher" groups="english_center.group_center_teacher"/>
         <menuitem id="menu_my_profile_student" name="My Profile" parent="menu_center_root" sequence="1" action="action_my_profile_student" groups="english_center.group_center_student"/>
 
         <menuitem id="menu_center_education" name="Education" parent="menu_center_root" sequence="2"/>
-        <menuitem id="menu_center_course_child" name="Course Templates" parent="menu_center_education" action="action_center_course" sequence="1" groups="base.group_erp_manager,english_center.group_center_teacher"/>
+        <menuitem id="menu_center_course_child" name="Course" parent="menu_center_education" action="action_center_course" sequence="1" groups="base.group_erp_manager,english_center.group_center_teacher,english_center.group_center_student"/>
         <menuitem id="menu_center_class_child" name="Active Classes" parent="menu_center_education" action="action_center_class" sequence="2"/>
 
         <menuitem id="menu_center_academic" name="Academic" parent="menu_center_root" sequence="3"/>
         <menuitem id="menu_center_assignment_child" name="Assignments" parent="menu_center_academic" action="action_center_assignment" sequence="1"/>
         <menuitem id="menu_center_submission_child" name="Submissions" parent="menu_center_academic" action="action_center_submission" sequence="2"/>
 
-        <menuitem id ="menu_center_facilities" name="Facilities" parent="menu_center_root" sequence="4"/>
+        <menuitem id ="menu_center_facilities" name="Facilities" parent="menu_center_root" sequence="4" groups="base.group_erp_manager,english_center.group_center_teacher"/>
         <menuitem id="menu_center_classroom" name="Classroom" parent="menu_center_facilities" action="action_center_classroom" sequence="1"/>
+
+        <menuitem id="menu_billing_root" name="Billing" parent="menu_center_education" sequence="5"/>
+        <menuitem id="menu_revenue_reports" name="Revenue Dashboard" parent="menu_billing_root" action="action_center_revenue_report" sequence="1"/>
     </data>
 </odoo>

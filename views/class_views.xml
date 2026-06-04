@@ -26,7 +26,8 @@
             <field name="arch" type="xml">
                 <form>
                     <header>
-                        <button name="action_active_class" string="Activate Class" type="object" class="oe_highlight" invisible="state != 'recruiting'"/>
+                        <button name="action_active_class" string="Activate Class" type="object" class="oe_highlight"
+                                invisible="state != 'recruiting'" groups='base.group_erp_manager'/>
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>
@@ -56,7 +57,8 @@
                             </group>
                         </group>
                         <group>
-                            <field name="teacher_id" readonly="state != 'recruiting'" context="{'form_view_ref': 'english_center.view_center_teacher_form_clean'}"/>
+                            <field name="teacher_id" readonly="state != 'recruiting'"
+                                   context="{'form_view_ref': 'english_center.view_center_teacher_form_clean'}" options="{'no_open': False}"/>
                         </group>
                         <notebook>
                             <page string="Sessions Timeline">
@@ -68,12 +70,11 @@
                                     </list>
                                 </field>
                             </page>
-                            <page string="Student list">
+                            <page string="Student list" groups="base.group_erp_manager,english_center.group_center_teacher">
                                 <field name="student_ids">
                                     <list>
                                         <field name="name"/>
                                         <field name="email"/>
-                                        <field name="credit"/>
                                     </list>
                                 </field>
                             </page>

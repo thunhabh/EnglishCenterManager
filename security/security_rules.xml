@@ -38,6 +38,12 @@
             <field name="domain_force">[('student_id.user_id', '=', user.id)]</field>
             <field name="groups" eval="[(4, ref('english_center.group_center_student'))]"/>
         </record>
+        <record id="rule_student_debt" model="ir.rule">
+            <field name="name">Student: Own Debt</field>
+            <field name="model_id" ref="model_center_debt_history"/>
+            <field name="domain_force">[('student_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('english_center.group_center_student'))]"/>
+        </record>
 
         <!--TEACHER-->
         <record id="rule_teacher_profile" model="ir.rule">
@@ -99,6 +105,12 @@
         <record id="rule_admin_bypass_submission" model="ir.rule">
             <field name="name">Admin Bypass: Submission</field>
             <field name="model_id" ref="model_center_submission"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(6, 0, [ref('base.group_erp_manager')])]"/>
+        </record>
+        <record id="rule_admin_bypass_debt" model="ir.rule">
+            <field name="name">Admin Bypass: Debt History</field>
+            <field name="model_id" ref="model_center_debt_history"/>
             <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(6, 0, [ref('base.group_erp_manager')])]"/>
         </record>
