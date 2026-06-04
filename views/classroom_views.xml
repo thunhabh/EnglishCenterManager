@@ -14,7 +14,7 @@
             <field name="arch" type="xml">
                 <list string="Classroom" default_order="floor">
                     <field name="name"/>
-                    <field name="total_classes"/>
+                    <field name="total_classes" groups="base.group_erp_manager"/>
                 </list>
             </field>
         </record>
@@ -39,7 +39,7 @@
                             <field name="floor" string="On Floor"/>
                             <field name="direction" string="At Direction"/>
                         </group>
-                        <notebook>
+                        <notebook groups="base.group_erp_manager">
                             <page string="Classes">
                                 <field name="class_ids" readonly="1">
                                 <list>

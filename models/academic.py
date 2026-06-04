@@ -114,3 +114,19 @@ class CenterSubmission(models.Model):
                 record.download_url = f'/web/content/center.submission/{record.id}/submission_file/{file_name_safe}?download=true'
             else:
                 record.download_url = "No file"
+
+    @api.model
+    def default_get(self, fields_list):
+        # 1. Default
+        res = super(CenterSubmission, self).default_get(fields_list)
+
+        is_student = self.env.user.has_group('english_center.group_center_student')
+        if is_student:
+            assignments = self.env['center.assignment'].search([
+                ('class_id.student_ids.user_id', '=', self.env.uid)
+            ])
+
+            if not assignments:
+                raise ValidationError("Hiện tại bạn không có bài tập nào cần nộp!")
+
+        return res
