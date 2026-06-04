@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="view_center_debt_history_pivot" model="ir.ui.view">
-        <field name="name">center.debt.history.pivot</field>
-        <field name="model">center.debt.history</field>
+    <record id="view_center_billing_history_pivot" model="ir.ui.view">
+        <field name="name">center.billing.history.pivot</field>
+        <field name="model">center.billing.history</field>
         <field name="arch" type="xml">
-            <pivot string="Revenue &amp; Debt Analysis" sample="1">
+            <pivot string="Billing Analysis" sample="1">
                 <field name="execution_date" type="row" interval="month"/>
                 <field name="course_id" type="col"/>
                 <field name="class_id" type="col"/>
@@ -14,9 +14,9 @@
         </field>
     </record>
 
-    <record id="view_center_debt_history_graph" model="ir.ui.view">
-        <field name="name">center.debt.history.graph</field>
-        <field name="model">center.debt.history</field>
+    <record id="view_center_biling_history_graph" model="ir.ui.view">
+        <field name="name">center.billing.history.graph</field>
+        <field name="model">center.billing.history</field>
         <field name="arch" type="xml">
             <graph string="Revenue Dashboard" type="bar" sample="1">
                 <field name="execution_date" interval="week"/>
@@ -25,24 +25,24 @@
         </field>
     </record>
 
-    <record id="view_center_debt_history_list" model="ir.ui.view">
-        <field name="name">center.debt.history.list</field>
-        <field name="model">center.debt.history</field>
+    <record id="view_center_billing_history_list" model="ir.ui.view">
+        <field name="name">center.billing.history.list</field>
+        <field name="model">center.billing.history</field>
         <field name="arch" type="xml">
-            <list string="Debt History" create="false" edit="false" delete="false">
+            <list string="Billing History" create="false" edit="false" delete="false">
                 <field name="execution_date"/>
                 <field name="student_id"/>
                 <field name="course_id"/>
                 <field name="class_id"/>
                 <field name="session_id"/>
-                <field name="amount" sum="Total Debt/Revenue"/>
+                <field name="amount" sum="Total"/>
             </list>
         </field>
     </record>
 
     <record id="action_center_report" model="ir.actions.act_window">
         <field name="name">Billing Reports</field>
-        <field name="res_model">center.debt.history</field>
+        <field name="res_model">center.billing.history</field>
         <field name="view_mode">pivot,graph,list</field>
     </record>
 
