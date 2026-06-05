@@ -30,7 +30,7 @@
         <menuitem id ="menu_center_facilities" name="Facilities" parent="menu_center_root" sequence="4" groups="base.group_erp_manager,english_center.group_center_teacher"/>
         <menuitem id="menu_center_classroom" name="Classroom" parent="menu_center_facilities" action="action_center_classroom" sequence="1"/>
 
-        <menuitem id="menu_billing_root" name="Billing" parent="menu_center_education" sequence="5"/>
+        <menuitem id="menu_billing_root" name="Billing" parent="menu_center_education" sequence="5" groups="base.group_erp_manager"/>
         <menuitem id="menu_revenue_reports" name="Revenue Dashboard" parent="menu_billing_root" action="action_center_revenue_report" sequence="1"/>
     </data>
 </odoo>

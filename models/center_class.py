@@ -57,14 +57,15 @@ class CenterClass(models.Model):
 
     total_revenue = fields.Float(string="Class Revenue", compute="_compute_class_revenue")
 
-    overlap_warning_html = fields.Html(string="Kiểm tra Lịch", readonly=True)
+    overlap_warning_html = fields.Html(string="Schedule checking", readonly=True)
 
     @api.onchange('schedule_ids', 'start_date', 'end_date', 'student_ids')
     def _onchange_check_student_overlaps(self):
         for rec in self:
             if not rec.schedule_ids or not rec.student_ids:
-                rec.overlap_warning_html = "<p style='color: green;'/>"
+                rec.overlap_warning_html = "<p style='color: green;'></p>"
                 continue
+
             html_log = "<ul>"
             has_overlap_overall = False
 
@@ -72,10 +73,14 @@ class CenterClass(models.Model):
                 is_overlap = False
                 student_log = f"<li><b>{student.name}</b>:<ul>"
 
+                real_student_id = student._origin.id if student._origin else student.id
+                if not real_student_id:
+                    continue
+
                 busy_classes = self.env['center.class'].search([
                     ('id', '!=', rec._origin.id if rec._origin else rec.id),
                     ('state', 'in', ['active', 'recruiting']),
-                    ('student_ids', 'in', student.id)
+                    ('student_ids', 'in', real_student_id)
                 ])
 
                 for bc in busy_classes:
@@ -87,7 +92,12 @@ class CenterClass(models.Model):
                             if str(bs.day_of_week) == str(cs.day_of_week):
                                 if cs.start_time < bs.end_time and cs.end_time > bs.start_time:
                                     is_overlap = True
-                                    student_log += f"<li>Having class {bc.name} on {int(bs.day_of_week) + 2} ({bs.start_time}h - {bs.end_time}h)</li>"
+                                    try:
+                                        day_name = int(bs.day_of_week) + 2
+                                    except ValueError:
+                                        day_name = bs.day_of_week
+                                    student_log += f"<li>Having class <b>{bc.name}</b> ( {day_name}, {bs.start_time}h - {bs.end_time}h)</li>"
+
                 student_log += "</ul></li>"
 
                 if is_overlap:
@@ -99,7 +109,7 @@ class CenterClass(models.Model):
             html_log += "</ul>"
 
             if has_overlap_overall:
-                rec.overlap_warning_html = f"<b><i style='color:red;'>WARNING: Unavailable students can't attend this class after click on Active!</i></b><br/>" + html_log
+                rec.overlap_warning_html = f"<b><i style='color:red;'>WARNING: Active this class will push student with busy schedule back to course's waiting list!</i></b><br/>" + html_log
             else:
                 rec.overlap_warning_html = html_log
 
@@ -115,6 +125,22 @@ class CenterClass(models.Model):
         for rec in self:
             valid_students = []
             invalid_students = []
+            missing_fields = []
+
+            if not rec.start_date:
+                missing_fields.append("Start Date")
+            if not rec.teacher_id:
+                missing_fields.append("Teacher")
+            if not rec.schedule_ids:
+                missing_fields.append("Weekly Schedule")
+            if not rec.student_ids:
+                missing_fields.append("Student List")
+            if not rec.classroom_id:
+                missing_fields.append("Classroom")
+
+            if missing_fields:
+                error_msg = "Can't active this class! Missing field:\n- " + "\n- ".join(missing_fields)
+                raise ValidationError(error_msg)
 
             for student in rec.student_ids:
                 is_overlap = False
@@ -144,8 +170,10 @@ class CenterClass(models.Model):
             if valid_students and rec.course_id:
                 rec.course_id.registered_student_ids = [(3, s_id) for s_id in valid_students]
 
+            rec.overlap_warning_html = False
             rec.state = 'active'
             rec.session_ids.unlink()
+
             current_date = rec.start_date
             session_count = 0
 
@@ -263,8 +291,7 @@ class CenterClass(models.Model):
             if record.start_date and record.start_date < fields.Date.today():
                 raise ValidationError("Error: Start date cannot be in the past.")
 
-
-    @api.depends('schedule_ids.day_of_week', 'schedule_ids.start_time', 'schedule_ids.end_time')
+    @api.depends('schedule_ids.day_of_week', 'schedule_ids.start_time', 'schedule_ids.end_time', 'course_id')
     def _compute_available_students(self):
         for record in self:
             all_students = self.env['center.student'].search([])
@@ -277,8 +304,6 @@ class CenterClass(models.Model):
             for student in all_students:
                 is_overlap = False
 
-                # Find other classes that this student attending
-                # 'Active' + 'Recuriting' classes
                 busy_classes = self.env['center.class'].search([
                     ('id', '!=', record._origin.id if record._origin else record.id),
                     ('state', 'in', ['active', 'recruiting']),
@@ -298,7 +323,13 @@ class CenterClass(models.Model):
                 if not is_overlap:
                     qualified.append(student.id)
 
-            record.available_student_ids = qualified
+                # all student on waiting list still appear
+                # whether their schedules are free or not
+                if record.course_id and record.course_id.registered_student_ids:
+                    qualified.extend(record.course_id.registered_student_ids.ids)
+
+                # use list to erase duplicates
+                record.available_student_ids = list(set(qualified))
 
     def action_view_class_schedule(self):
         return {
@@ -309,3 +340,11 @@ class CenterClass(models.Model):
             'domain': [('class_id', '=', self.id)],
             'context': {'default_class_id': self.id},
         }
+
+    @api.onchange('course_id')
+    def _onchange_course_id_pull_students(self):
+        for rec in self:
+            if rec.course_id and rec.course_id.registered_student_ids:
+                rec.student_ids = [(6, 0, rec.course_id.registered_student_ids.ids)]
+            else:
+                rec.student_ids = False
