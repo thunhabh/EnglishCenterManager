@@ -1,5 +1,6 @@
 
 from odoo import api, fields, models, exceptions
+from odoo.orm.fields_temporal import Datetime
 
 
 class ClassSession(models.Model):
@@ -22,16 +23,15 @@ class ClassSession(models.Model):
 
     is_accounted = fields.Boolean(string="Is Accounted", default=False, index=True)
 
-    @api.model
-    def cron_add_bills_passed_sessions(self):
-        now_utc = fields.Datetime.now()
+    def cron_add_debt_passed_sessions(self):
+        now_utc = Datetime.now()
         passed_sessions = self.search([
             ('end_datetime', '<', now_utc),
             ('is_accounted', '=', False),
             ('class_id.state', '=', 'active')
         ])
 
-        history_obj = self.env['center.billing.history']
+        history_obj = self.env['center.debt.history']
 
         for session in passed_sessions:
             session_price = session.class_id.course_id.price_per_session

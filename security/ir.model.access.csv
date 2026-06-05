@@ -26,6 +26,6 @@ access_stu_schedule,center.class.schedule,model_center_class_schedule,english_ce
 access_stu_session,class.session,model_class_session,english_center.group_center_student,1,0,0,0
 access_stu_classroom,center.classroom,model_center_classroom,english_center.group_center_student,1,0,0,0
 access_stu_teacher,hr.employee.student,hr.model_hr_employee,english_center.group_center_student,1,0,0,0
-access_admin_debt_history,center.billing.history,model_center_billing_history,base.group_erp_manager,1,1,1,1
-access_stu_debt_history,center.billing.history,model_center_billing_history,english_center.group_center_student,1,0,0,0
+access_admin_debt_history,center.debt.history,model_center_debt_history,base.group_erp_manager,1,1,1,1
+access_stu_debt_history,center.debt.history,model_center_debt_history,english_center.group_center_student,1,0,0,0
 access_course_register_wizard,center.course.register.wizard,model_center_course_register_wizard,base.group_user,1,1,1,1
