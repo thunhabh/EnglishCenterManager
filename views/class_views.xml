@@ -74,7 +74,6 @@
                             <page string="Student list" groups="base.group_erp_manager,english_center.group_center_teacher">
                                 <field name="overlap_warning_html" widget="html" force_save="1"
                                 invisible="state != 'recruiting'"/>
-
                                 <field name="student_ids">
                                     <list>
                                         <field name="name"/>
@@ -87,9 +86,7 @@
                                 <field name="assignment_ids" readonly="1">
                                     <list string="Assignments List">
                                         <field name="name" string="Assignment Name"/>
-
                                         <field name="due_date" string="Deadline" widget="datetime"/>
-
                                     </list>
                                 </field>
                             </page>

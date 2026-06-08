@@ -1,4 +1,3 @@
-
 from odoo import api, fields, models, exceptions
 from odoo.orm.fields_temporal import Datetime
 

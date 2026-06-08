@@ -1,5 +1,6 @@
 from odoo import fields, models, api
 from odoo.exceptions import ValidationError
+from odoo.fields import Command
 
 
 class CenterCourse(models.Model):
@@ -79,7 +80,7 @@ class CenterCourseRegisterWizard(models.TransientModel):
         if self.student_id in self.course_id.registered_student_ids:
             raise ValidationError(f"Student {self.student_id.name} has already been registered!")
 
-        self.course_id.sudo().registered_student_ids = [(4, self.student_id.id)]
+        self.course_id.sudo().registered_student_ids = [Command.link(self.student_id.id)]
 
         return {
             'type': 'ir.actions.client',

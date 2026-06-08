@@ -1,4 +1,5 @@
 from odoo import fields, models, api
+from odoo.cli import Command
 from odoo.exceptions import ValidationError, AccessError
 
 
@@ -34,7 +35,7 @@ class CenterTeacher(models.Model):
                     'login': email,
                     'password': '12345678',
                     'email': email,
-                    'group_ids': [(4, teacher_group.id)],
+                    'group_ids': [Command.link([teacher_group.id])]
                 }
                 new_user = self.env['res.users'].create(user_vals)
                 vals['user_id'] = new_user.id

@@ -8,7 +8,7 @@ class CenterAssignment(models.Model):
 
     name = fields.Char(string="Title", required=True)
     class_id = fields.Many2one('center.class', string="Class", required=True)
-    teacher_id = fields.Many2one('hr.employee', related='class_id.teacher_id', store=True, string="Teacher")
+    teacher_id = fields.Many2one('hr.employee', related='class_id.teacher_id', store=True, string="Teacher", required=True)
 
     description = fields.Char(string="Requirements")
 
@@ -127,6 +127,6 @@ class CenterSubmission(models.Model):
             ])
 
             if not assignments:
-                raise ValidationError("Hiện tại bạn không có bài tập nào cần nộp!")
+                raise ValidationError("You don't have any assignment right now!")
 
         return res

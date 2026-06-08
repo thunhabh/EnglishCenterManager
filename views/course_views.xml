@@ -70,27 +70,28 @@
                         </group>
 
                         <notebook>
-                            <page string="Classes" name="classes" groups="base.group_erp_manager">
-                                <field name="class_ids"/>
+                            <page string="Description" name="description">
+                                <field name="description"/>
                             </page>
-
                             <page string="Registered Student List" name="waiting_list" groups="base.group_erp_manager">
-                                <field name="registered_student_ids" readonly="1">
+                                <field name="registered_student_ids" readonly="1"/>
+                            </page>
+                            <page string="Classes">
+                                <field name="class_ids" readonly="1">
                                     <list>
-                                        <field name="name"/>
-                                        <field name="email"/>
+                                        <field name="name" string="Class Code"/>
+                                        <field name="start_date" string="Start Date"/>
+                                        <field name="teacher_id" string="Teacher"/>
+                                        <field name="state" string="Status" widget="badge"/>
                                     </list>
                                 </field>
                             </page>
 
-                            <page string="Description" name="description">
-                                <field name="description"/>
-                            </page>
+
                         </notebook>
                     </sheet>
                 </form>
             </field>
         </record>
-
     </data>
 </odoo>

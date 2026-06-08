@@ -4,6 +4,7 @@ import pytz
 
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
+from odoo.cli import Command
 
 
 class CenterClass(models.Model):
@@ -166,9 +167,10 @@ class CenterClass(models.Model):
 
             if invalid_students:
                 rec.student_ids = [(3, s_id) for s_id in invalid_students]
+                rec.student_ids = [Command.unlink(s_id) for s_id in invalid_students]
 
             if valid_students and rec.course_id:
-                rec.course_id.registered_student_ids = [(3, s_id) for s_id in valid_students]
+                rec.course_id.registered_student_ids = [Command.unlink(s_id) for s_id in valid_students]
 
             rec.overlap_warning_html = False
             rec.state = 'active'
@@ -292,6 +294,58 @@ class CenterClass(models.Model):
                 raise ValidationError("Error: Start date cannot be in the past.")
 
     @api.depends('schedule_ids.day_of_week', 'schedule_ids.start_time', 'schedule_ids.end_time', 'course_id')
+    def action_active_class(self):
+        """ Generate physical sessions based on schedule lines and timezone """
+        user_tz = pytz.timezone(self.env.user.tz or 'UTC')
+
+        def float_to_time(f):
+            h = int(f)
+            m = int(round((f - h) * 60))
+            if m == 60:
+                h, m = h + 1, 0
+            return time(hour=h, minute=m)
+
+        for rec in self:
+            if not rec.teacher_id:
+                raise ValidationError("Please select a Teacher.")
+            if not rec.schedule_ids:
+                raise ValidationError("Please configure at least one schedule slot.")
+
+            rec.state = 'active'
+            rec.session_ids.unlink()
+
+            current_date = rec.start_date
+            session_count = 0
+
+            while session_count < rec.course_id.total_sessions:
+                weekday_str = str(current_date.weekday())
+                # Find if current date matches any configured schedule day
+                schedules = rec.schedule_ids.filtered(lambda s: s.day_of_week == weekday_str)
+
+                for sched in schedules:
+                    if session_count >= rec.course_id.total_sessions:
+                        break
+                    session_count += 1
+
+                    # Convert to local timezone datetime
+                    start_local = user_tz.localize(datetime.combine(current_date, float_to_time(sched.start_time)))
+                    end_local = user_tz.localize(datetime.combine(current_date, float_to_time(sched.end_time)))
+
+                    # Convert to UTC to store properly in Database
+                    start_utc = start_local.astimezone(pytz.UTC).replace(tzinfo=None)
+                    end_utc = end_local.astimezone(pytz.UTC).replace(tzinfo=None)
+
+                    self.env['class.session'].create({
+                        'class_id': rec.id,
+                        'sequence': session_count,
+                        'start_datetime': start_utc,
+                        'end_datetime': end_utc,
+                    })
+                current_date += timedelta(days=1)
+
+            rec.end_date = current_date - timedelta(days=1)
+
+    @api.depends('schedule_ids.day_of_week', 'schedule_ids.start_time', 'schedule_ids.end_time')
     def _compute_available_students(self):
         for record in self:
             all_students = self.env['center.student'].search([])
@@ -304,6 +358,8 @@ class CenterClass(models.Model):
             for student in all_students:
                 is_overlap = False
 
+                # Find other classes that this student attending
+                # 'Active' + 'Recuriting' classes
                 busy_classes = self.env['center.class'].search([
                     ('id', '!=', record._origin.id if record._origin else record.id),
                     ('state', 'in', ['active', 'recruiting']),

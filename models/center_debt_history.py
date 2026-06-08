@@ -1,5 +1,4 @@
 from odoo import models, fields, api
-from datetime import datetime
 
 class CenterDebtHistory(models.Model):
     _name = 'center.debt.history'

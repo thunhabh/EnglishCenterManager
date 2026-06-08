@@ -1,4 +1,5 @@
 from odoo import api, fields, models, exceptions
+from odoo.cli import Command
 from odoo.exceptions import ValidationError, AccessError
 
 
@@ -55,7 +56,35 @@ class CenterStudent(models.Model):
                     'login': email,
                     'password': '12345678',
                     'email': email,
-                    'group_ids': [(6, 0, [student_group.id, internal_user_group.id])],
+                    'group_ids': [Command.set([student_group.id, internal_user_group.id])],
+                }
+
+                new_user = self.env['res.users'].create(user_vals)
+                vals['user_id'] = new_user.id
+
+        return super(CenterStudent, self).create(vals_list)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        if not self.env.user.has_group('base.group_erp_manager'):
+            raise AccessError("Strict Security: Only Administrators are allowed to create new students.")
+
+        for vals in vals_list:
+            email = vals.get('email')
+            if email:
+                existing_user = self.env['res.users'].search([('login', '=', email)])
+                if existing_user:
+                    raise ValidationError(f"Email '{email}' is already registered as a user account!")
+
+                student_group = self.env.ref('english_center.group_center_student')
+                internal_user_group = self.env.ref('base.group_user')
+
+                user_vals = {
+                    'name': vals.get('name'),
+                    'login': email,
+                    'password': '12345678',
+                    'email': email,
+                    'group_ids': [Command.set([student_group.id, internal_user_group.id])],
                 }
 
                 new_user = self.env['res.users'].create(user_vals)
@@ -76,7 +105,7 @@ class CenterStudent(models.Model):
             'res_model': 'class.session',
             'view_mode': 'calendar,list',
             'domain': [('student_ids', 'in', self.id)],
-            'context': {'default_student_ids': [(4, self.id)]},
+            'context': {'default_student_ids': [Command.link(self.id)]}
         }
 
     @api.model
