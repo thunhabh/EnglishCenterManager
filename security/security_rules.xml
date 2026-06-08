@@ -6,43 +6,43 @@
             <field name="name">Student: Own Profile</field>
             <field name="model_id" ref="model_center_student"/>
             <field name="domain_force">[('user_id', '=', user.id)]</field>
-            <field name="groups" eval="[(4, ref('english_center.group_center_student'))]"/>
+            <field name="groups" eval="[Command.link(ref('english_center.group_center_student'))]"/>
         </record>
         <record id="rule_student_class" model="ir.rule">
             <field name="name">Student: Enrolled Classes</field>
             <field name="model_id" ref="model_center_class"/>
             <field name="domain_force">[('student_ids.user_id', '=', user.id)]</field>
-            <field name="groups" eval="[(4, ref('english_center.group_center_student'))]"/>
+            <field name="groups" eval="[Command.link(ref('english_center.group_center_student'))]"/>
         </record>
         <record id="rule_student_session" model="ir.rule">
             <field name="name">Student: Own Class Sessions</field>
             <field name="model_id" ref="model_class_session"/>
             <field name="domain_force">[('class_id.student_ids.user_id', '=', user.id)]</field>
-            <field name="groups" eval="[(4, ref('english_center.group_center_student'))]"/>
+            <field name="groups" eval="[Command.link(ref('english_center.group_center_student'))]"/>
         </record>
         <record id="rule_student_schedule" model="ir.rule">
             <field name="name">Student: Own Class Schedule</field>
             <field name="model_id" ref="model_center_class_schedule"/>
             <field name="domain_force">[('class_id.student_ids.user_id', '=', user.id)]</field>
-            <field name="groups" eval="[(4, ref('english_center.group_center_student'))]"/>
+            <field name="groups" eval="[Command.link(ref('english_center.group_center_student'))]"/>
         </record>
         <record id="rule_student_assignment" model="ir.rule">
             <field name="name">Student: Class Assignments</field>
             <field name="model_id" ref="model_center_assignment"/>
             <field name="domain_force">[('class_id.student_ids.user_id', '=', user.id)]</field>
-            <field name="groups" eval="[(4, ref('english_center.group_center_student'))]"/>
+            <field name="groups" eval="[Command.link(ref('english_center.group_center_student'))]"/>
         </record>
         <record id="rule_student_submission" model="ir.rule">
             <field name="name">Student: Own Submissions</field>
             <field name="model_id" ref="model_center_submission"/>
             <field name="domain_force">[('student_id.user_id', '=', user.id)]</field>
-            <field name="groups" eval="[(4, ref('english_center.group_center_student'))]"/>
+            <field name="groups" eval="[Command.link(ref('english_center.group_center_student'))]"/>
         </record>
         <record id="rule_student_debt" model="ir.rule">
             <field name="name">Student: Own Debt</field>
             <field name="model_id" ref="model_center_debt_history"/>
             <field name="domain_force">[('student_id.user_id', '=', user.id)]</field>
-            <field name="groups" eval="[(4, ref('english_center.group_center_student'))]"/>
+            <field name="groups" eval="[Command.link(ref('english_center.group_center_student'))]"/>
         </record>
 
         <!--TEACHER-->
@@ -50,31 +50,31 @@
             <field name="name">Teacher: Own Profile</field>
             <field name="model_id" ref="hr.model_hr_employee"/>
             <field name="domain_force">[('user_id', '=', user.id)]</field>
-            <field name="groups" eval="[(4, ref('english_center.group_center_teacher'))]"/>
+            <field name="groups" eval="[Command.link(ref('english_center.group_center_teacher'))]"/>
         </record>
         <record id="rule_teacher_class" model="ir.rule">
             <field name="name">Teacher: Own Classes</field>
             <field name="model_id" ref="model_center_class"/>
             <field name="domain_force">[('teacher_id.user_id', '=', user.id)]</field>
-            <field name="groups" eval="[(4, ref('english_center.group_center_teacher'))]"/>
+                        <field name="groups" eval="[Command.link(ref('english_center.group_center_teacher'))]"/>
         </record>
         <record id="rule_teacher_student" model="ir.rule">
             <field name="name">Teacher: Own Students</field>
             <field name="model_id" ref="model_center_student"/>
             <field name="domain_force">[('class_ids.teacher_id.user_id', '=', user.id)]</field>
-            <field name="groups" eval="[(4, ref('english_center.group_center_teacher'))]"/>
+                        <field name="groups" eval="[Command.link(ref('english_center.group_center_teacher'))]"/>
         </record>
         <record id="rule_teacher_assignment" model="ir.rule">
             <field name="name">Teacher: Own Assignments</field>
             <field name="model_id" ref="model_center_assignment"/>
             <field name="domain_force">[('teacher_id.user_id', '=', user.id)]</field>
-            <field name="groups" eval="[(4, ref('english_center.group_center_teacher'))]"/>
+                        <field name="groups" eval="[Command.link(ref('english_center.group_center_teacher'))]"/>
         </record>
         <record id="rule_teacher_submission" model="ir.rule">
             <field name="name">Teacher: Submissions for Own Assignments</field>
             <field name="model_id" ref="model_center_submission"/>
             <field name="domain_force">[('assignment_id.teacher_id.user_id', '=', user.id)]</field>
-            <field name="groups" eval="[(4, ref('english_center.group_center_teacher'))]"/>
+                        <field name="groups" eval="[Command.link(ref('english_center.group_center_teacher'))]"/>
         </record>
 
         <!--ADMIN-->
@@ -82,37 +82,37 @@
             <field name="name">Admin Bypass: Teacher</field>
             <field name="model_id" ref="hr.model_hr_employee"/>
             <field name="domain_force">[(1, '=', 1)]</field>
-            <field name="groups" eval="[(6, 0, [ref('base.group_erp_manager')])]"/>
+            <field name="groups" eval="[Command.set(ref('base.group_erp_manager'))]"/>
         </record>
         <record id="rule_admin_bypass_class" model="ir.rule">
             <field name="name">Admin Bypass: Class</field>
             <field name="model_id" ref="model_center_class"/>
             <field name="domain_force">[(1, '=', 1)]</field>
-            <field name="groups" eval="[(6, 0, [ref('base.group_erp_manager')])]"/>
+                        <field name="groups" eval="[Command.set(ref('base.group_erp_manager'))]"/>
         </record>
         <record id="rule_admin_bypass_student" model="ir.rule">
             <field name="name">Admin Bypass: Student</field>
             <field name="model_id" ref="model_center_student"/>
             <field name="domain_force">[(1, '=', 1)]</field>
-            <field name="groups" eval="[(6, 0, [ref('base.group_erp_manager')])]"/>
+                        <field name="groups" eval="[Command.set(ref('base.group_erp_manager'))]"/>
         </record>
         <record id="rule_admin_bypass_assignment" model="ir.rule">
             <field name="name">Admin Bypass: Assignment</field>
             <field name="model_id" ref="model_center_assignment"/>
             <field name="domain_force">[(1, '=', 1)]</field>
-            <field name="groups" eval="[(6, 0, [ref('base.group_erp_manager')])]"/>
+                        <field name="groups" eval="[Command.set(ref('base.group_erp_manager'))]"/>
         </record>
         <record id="rule_admin_bypass_submission" model="ir.rule">
             <field name="name">Admin Bypass: Submission</field>
             <field name="model_id" ref="model_center_submission"/>
             <field name="domain_force">[(1, '=', 1)]</field>
-            <field name="groups" eval="[(6, 0, [ref('base.group_erp_manager')])]"/>
+                        <field name="groups" eval="[Command.set(ref('base.group_erp_manager'))]"/>
         </record>
         <record id="rule_admin_bypass_debt" model="ir.rule">
             <field name="name">Admin Bypass: Debt History</field>
             <field name="model_id" ref="model_center_debt_history"/>
             <field name="domain_force">[(1, '=', 1)]</field>
-            <field name="groups" eval="[(6, 0, [ref('base.group_erp_manager')])]"/>
+                        <field name="groups" eval="[Command.set(ref('base.group_erp_manager'))]"/>
         </record>
     </data>
 </odoo>

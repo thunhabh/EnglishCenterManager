@@ -1,5 +1,5 @@
 from odoo import api, fields, models, exceptions
-from odoo.cli import Command
+from odoo.fields import Command
 from odoo.exceptions import ValidationError, AccessError
 
 

@@ -4,7 +4,7 @@ import pytz
 
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.cli import Command
+from odoo.fields import Command
 
 
 class CenterClass(models.Model):
@@ -166,7 +166,6 @@ class CenterClass(models.Model):
                     valid_students.append(student.id)
 
             if invalid_students:
-                rec.student_ids = [(3, s_id) for s_id in invalid_students]
                 rec.student_ids = [Command.unlink(s_id) for s_id in invalid_students]
 
             if valid_students and rec.course_id:
@@ -401,6 +400,6 @@ class CenterClass(models.Model):
     def _onchange_course_id_pull_students(self):
         for rec in self:
             if rec.course_id and rec.course_id.registered_student_ids:
-                rec.student_ids = [(6, 0, rec.course_id.registered_student_ids.ids)]
+                rec.student_ids = Command.set(rec.course_id.registered_student_ids.ids)
             else:
                 rec.student_ids = False
